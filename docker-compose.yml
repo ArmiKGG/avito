@@ -1,0 +1,144 @@
+# To execute this docker-compose yml file use `docker-compose -f docker-compose-v3-full-grid.yml up`
+# Add the `-d` flag at the end for detached execution
+# To stop the execution, hit Ctrl+C, and then `docker-compose -f docker-compose-v3-full-grid.yml down`
+version: "3.9"
+services:
+  selenium-event-bus:
+    image: selenium/event-bus:4.1.3-20220405
+    container_name: selenium-event-bus
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "5557:5557"
+
+  selenium-sessions:
+    image: selenium/sessions:4.1.3-20220405
+    container_name: selenium-sessions
+    ports:
+      - "5556:5556"
+    depends_on:
+      - selenium-event-bus
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  selenium-session-queue:
+    image: selenium/session-queue:4.1.3-20220405
+    container_name: selenium-session-queue
+    ports:
+      - "5559:5559"
+    depends_on:
+      - selenium-event-bus
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  selenium-distributor:
+    image: selenium/distributor:4.1.3-20220405
+    container_name: selenium-distributor
+    ports:
+      - "5553:5553"
+    depends_on:
+      - selenium-event-bus
+      - selenium-sessions
+      - selenium-session-queue
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_SESSIONS_MAP_HOST=selenium-sessions
+      - SE_SESSIONS_MAP_PORT=5556
+      - SE_SESSION_QUEUE_HOST=selenium-session-queue
+      - SE_SESSION_QUEUE_PORT=5559
+
+  selenium-router:
+    image: selenium/router:4.1.3-20220405
+    container_name: selenium-router
+    ports:
+      - "4444:4444"
+    depends_on:
+      - selenium-distributor
+      - selenium-sessions
+      - selenium-session-queue
+    environment:
+      - SE_DISTRIBUTOR_HOST=selenium-distributor
+      - SE_DISTRIBUTOR_PORT=5553
+      - SE_SESSIONS_MAP_HOST=selenium-sessions
+      - SE_SESSIONS_MAP_PORT=5556
+      - SE_SESSION_QUEUE_HOST=selenium-session-queue
+      - SE_SESSION_QUEUE_PORT=5559
+
+  firefox_worker_1:
+    image: selenium/node-firefox:4.1.3-20220405
+    shm_size: 2gb
+    depends_on:
+      - selenium-event-bus
+    environment:
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=100
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  firefox_worker_2:
+    image: selenium/node-firefox:4.1.3-20220405
+    shm_size: 2gb
+    depends_on:
+      - selenium-event-bus
+    environment:
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=100
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  firefox_worker_3:
+    image: selenium/node-firefox:4.1.3-20220405
+    shm_size: 2gb
+    depends_on:
+      - selenium-event-bus
+    environment:
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=100
+      - SE_EVENT_BUS_HOST=selenium-event-bus
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+
+  auto_ru_worker:
+    build: auto_ru_api
+    links:
+      - selenium-router
+    shm_size: 2gb
+    depends_on:
+      - selenium-router
+    restart: on-failure
+    environment:
+      - STARTING_PAGE=auto.ru
+      - ROUTER=selenium-router
+      - ROUTER_PORT=4444
+      - MONGO_LOG=arman
+      - MONGO_PAS=arman
+    ports:
+      - "5000:5000"
+
+  auto_ru_searcher:
+    build: auto_ru_searcher
+    links:
+      - auto_ru_worker
+    depends_on:
+      - selenium-router
+      - auto_ru_worker
+    restart: on-failure
+    environment:
+      - STARTING_PAGE=auto.ru
+      - API_HOST=auto_ru_worker
+      - ROUTER=selenium-router
+      - MONGO_LOG=arman
+      - MONGO_PAS=arman
+      - API_PORT=5000
+      - ROUTER_PORT=4444
+    ports:
+      - "5050:5050"
