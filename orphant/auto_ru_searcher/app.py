@@ -138,23 +138,6 @@ class AutoRuParserMonitor(Resource):
             auto = AutoRu(BeautifulSoup(inner_HTML, 'lxml'), inner_HTML)
             all_links = auto.get_catalog_links()
             print(all_links, flush=True)
-            with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=3) as executor:
-                future_to_files = {executor.submit(do_job, link, processed, unprocessed): link for link in
-                                   all_links}
-                for future in concurrent.futures.as_completed(future_to_files):
-                    url = future_to_files[future]
-                    try:
-                        data = future.result()
-                        print('%r data: %s' % (url, exc))
-                    except Exception as exc:
-                        print('%r generated an exception: %s' % (url, exc))
-                    else:
-                        print('%r page is %d bytes' % (url, len(data)))
-            pickle.dump(driver.get_cookies(), open("cookies/auto_ru_cookies.pkl", "wb"))
-            driver.quit()
-            client.close()
-            return make_response({'status': 'job is done'}, 200)
         except Exception as e:
             print(e, flush=True)
             driver.quit()

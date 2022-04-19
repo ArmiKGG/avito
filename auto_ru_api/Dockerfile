@@ -18,5 +18,4 @@ CMD gunicorn --worker-class gevent \
   --timeout 50 \
   --limit-request-line 0 \
   --preload \
-  --log-level debug\
   wsgi:app
