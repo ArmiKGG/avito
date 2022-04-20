@@ -107,19 +107,19 @@ services:
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
 
 
-#  auto_ru_worker:
-#    build: auto_ru_api
-#    links:
-#      - selenium-router
-#    shm_size: 2gb
-#    depends_on:
-#      - selenium-router
-#    restart: on-failure
-#    environment:
-#      - STARTING_PAGE=auto.ru
-#      - ROUTER=selenium-router
-#      - ROUTER_PORT=4444
-#      - MONGO_LOG=arman
-#      - MONGO_PAS=arman
-#    ports:
-#      - "5000:5000"
+  auto_ru_worker:
+    build: auto_ru_api
+    links:
+      - selenium-router
+    shm_size: 2gb
+    depends_on:
+      - selenium-router
+    restart: on-failure
+    environment:
+      - STARTING_PAGE=auto.ru
+      - ROUTER=selenium-router
+      - ROUTER_PORT=4444
+      - MONGO_LOG=arman
+      - MONGO_PAS=arman
+    ports:
+      - "5000:5000"

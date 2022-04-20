@@ -1,3 +1,4 @@
+import requests
 from selenium import webdriver
 import os
 import time
@@ -17,7 +18,8 @@ def prepare_driver():
     options = webdriver.FirefoxOptions()
     options.add_argument('--disable-gpu')
     options.add_argument(f'--host=http://{os.environ.get("STARTING_PAGE")}')
-    driver = webdriver.Remote(command_executor=f'http://{os.environ.get("ROUTER")}:{os.environ.get("ROUTER_PORT")}/wd/hub', options=options)
+    driver = webdriver.Remote(
+        command_executor=f'http://{os.environ.get("ROUTER")}:{os.environ.get("ROUTER_PORT")}/wd/hub', options=options)
     if os.path.exists('cookies/auto_ru_cookies.pkl'):
         cookies = pickle.load(open("cookies/auto_ru_cookies.pkl", "rb"))
         for cookie in cookies:
@@ -96,9 +98,9 @@ class AutoRu:
 
 
 def mongo_client():
-    # client = pymongo.MongoClient(f'mongodb+srv://{os.environ.get("MONGO_LOG")}:{os.environ.get("MONGO_PAS")}@cluster0'
-    #                              f'.qmeif.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-    client = pymongo.MongoClient('localhost', 27017)
+    client = pymongo.MongoClient(f'mongodb+srv://{os.environ.get("MONGO_LOG")}:{os.environ.get("MONGO_PAS")}@cluster0'
+                                 f'.qmeif.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+    # client = pymongo.MongoClient('localhost', 27017)
     print('Mongo connected!')
     return client
 
@@ -198,7 +200,14 @@ def process_links(all_links, driver, url, client, auto_info, ready_data, retry):
                                    'images': auto.get_images(), 'phone': phone, 'price': auto.get_price(),
                                    'url': link, 'title_webpage': driver.title, 'title': auto.get_title(),
                                    'views': auto.get_views(), 'date_created': auto.get_creation_date()}
-                    print(f"got {parsed_info['title']} parsed!!!")
+                    text = f"<code>tag</code>: <b>{parsed_info['tag'] if parsed_info['tag'] else 'No tag'}</b>\n\n<code>date_scanned</code>:" \
+                           f" <i>{datetime.today().strftime('%Y-%M-%dT%H:%M:%S')}</i>\n\n<code>date_created</code>: <i>{parsed_info['date_created']}</i>\n\n<code>views</code>: <i>{parsed_info['views'] if parsed_info['views'] else 'no views'}</i>\n\n<code>title</code>: <b>{parsed_info['title']}</b>\n\n<code>price</code>: <b>{parsed_info['price']}</b>\n\n<code>phone</code>: {parsed_info['phone']}\n\n<code>info</code>: <i>{parsed_info['title_webpage']}</i>\n\n<code>url</code>: <i>{parsed_info['url']}</i> "
+                    resp = requests.post(
+                        url='https://api.telegram.org/bot{0}/{1}'.format(
+                            "5353011015:AAGCAPVNvOv7qem4NcQqykYA17FgpjcWVO0", "sendMessage"),
+                        data={'chat_id': -1001606926823, 'text': text, "parse_mode": "HTML"}
+                    )
+                    print(f"got {parsed_info['title']} parsed!!! - tg status = {resp.json()}")
                     auto_info.insert_one({"datetime": datetime.today().replace(microsecond=0), **parsed_info})
                     pickle.dump(driver.get_cookies(), open("cookies/auto_ru_cookies.pkl", "wb"))
                     ready_data.append(parsed_info)
