@@ -52,4 +52,4 @@ api.add_resource(AutoRuParser, '/api/auto_ru/router')
 api.add_resource(Status, '/api/auto_ru/health')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run()
