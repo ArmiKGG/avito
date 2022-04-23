@@ -6,7 +6,7 @@ url = "https://auto.ru/moskva/cars/used/?year_from=2012&price_to=1299999&catalog
 
 
 def job():
-    data = requests.get("{}:{}".format("http://51.250.104.136", "5000"), json={"url": url})
+    data = requests.get("{}:{}/api/auto_ru/router".format("http://51.250.104.136", "5000"), json={"url": url})
     print(data.json(), flush=True)
 
 
