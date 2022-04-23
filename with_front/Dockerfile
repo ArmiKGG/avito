@@ -8,10 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD gunicorn --worker-class gevent \
-  --workers 20 \
-  --bind 0.0.0.0:8080 \
-  --timeout 0 \
-  --limit-request-line 0 \
-  --preload \
-  wsgi:app
+CMD ["python", "./app.py"]

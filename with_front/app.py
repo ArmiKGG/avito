@@ -1,46 +1,16 @@
-import os
-import time
-
 import requests
 import schedule
-from flask import Flask, render_template, request
 
 
-app = Flask(__name__)
-
-PORT = 5000
+url = "https://auto.ru/moskva/cars/used/?year_from=2012&price_to=1299999&catalog_filter=mark%3DINFINITI&catalog_filter=mark%3DSUZUKI&catalog_filter=mark%3DLAND_ROVER&catalog_filter=mark%3DVOLKSWAGEN&catalog_filter=mark%3DCHEVROLET&catalog_filter=mark%3DCITROEN&catalog_filter=mark%3DPORSCHE&catalog_filter=mark%3DSKODA&catalog_filter=mark%3DOPEL&catalog_filter=mark%3DMITSUBISHI&catalog_filter=mark%3DMAZDA&catalog_filter=mark%3DLEXUS&catalog_filter=mark%3DMINI&catalog_filter=mark%3DRENAULT&catalog_filter=mark%3DTOYOTA&catalog_filter=mark%3DFORD&catalog_filter=mark%3DHYUNDAI&catalog_filter=mark%3DBMW&catalog_filter=mark%3DNISSAN&catalog_filter=mark%3DKIA&catalog_filter=mark%3DVOLVO&catalog_filter=mark%3DHONDA&catalog_filter=mark%3DAUDI&catalog_filter=mark%3DMERCEDES&seller_group=PRIVATE&sort=price-asc&top_days=3&page=1"
 
 
-@app.route('/', methods=["GET", "POST"])
-def index():
-    return render_template('index.html')
+def job():
+    data = requests.get("{}:{}".format("http://51.250.104.136", "5000"), json={"url": url})
+    print(data, flush=True)
 
 
-@app.route('/add_env', methods=["GET", "POST"])
-def addenv():
-    if request.method == 'POST':
-        os.environ['MONITOR_URL'] = request.form.get("url")
-        if os.environ.get('MONITOR_URL'):
-            return {"status": True}
+schedule.every(2).minutes.do(job)
 
-
-@app.route('/monitor', methods=["GET", "POST"])
-def monitor():
-    if request.method == 'POST':
-        url = os.environ.get('MONITOR_URL')
-        if not url:
-            return {"status": False}
-
-        def job():
-            data = requests.get("{}:{}".format(os.environ['ROUTER'], os.environ['ROUTER_PORT']), json={"url": url},
-                                timeout=600)
-            print(data)
-        schedule.every(5).minutes.do(job)
-
-        while True:
-            schedule.run_pending()
-            time.sleep(5)
-
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+while True:
+    schedule.run_pending()

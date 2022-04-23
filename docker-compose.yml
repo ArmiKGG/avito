@@ -131,8 +131,3 @@ services:
     depends_on:
       - auto_ru_worker
     restart: on-failure
-    environment:
-      - ROUTER=auto_ru_worker
-      - ROUTER_PORT=5000
-    ports:
-      - "8080:8080"
