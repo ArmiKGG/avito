@@ -10,7 +10,7 @@ COPY . .
 
 CMD gunicorn --worker-class gevent \
   --workers 20 \
-  --bind 0.0.0.0:5555 \
+  --bind 0.0.0.0:80 \
   --timeout 0 \
   --limit-request-line 0 \
   --preload \
