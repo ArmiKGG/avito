@@ -82,8 +82,7 @@ services:
     depends_on:
       - selenium-event-bus
     environment:
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_MAX_SESSIONS=100
+      - SE_NODE_MAX_SESSIONS=1
       - SE_EVENT_BUS_HOST=selenium-event-bus
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
@@ -95,48 +94,47 @@ services:
     depends_on:
       - selenium-event-bus
     environment:
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_MAX_SESSIONS=100
+      - SE_NODE_MAX_SESSIONS=1
       - SE_EVENT_BUS_HOST=selenium-event-bus
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
 
-  firefox_worker_3:
-    image: selenium/node-firefox:4.1.3-20220405
-    shm_size: 2gb
-    depends_on:
-      - selenium-event-bus
-    restart: always
-    environment:
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_MAX_SESSIONS=100
-      - SE_EVENT_BUS_HOST=selenium-event-bus
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+#   firefox_worker_3:
+#     image: selenium/node-firefox:4.1.3-20220405
+#     shm_size: 2gb
+#     depends_on:
+#       - selenium-event-bus
+#     restart: always
+#     environment:
+#       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+#       - SE_NODE_MAX_SESSIONS=100
+#       - SE_EVENT_BUS_HOST=selenium-event-bus
+#       - SE_EVENT_BUS_PUBLISH_PORT=4442
+#       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
 
 
-  auto_ru_worker:
-    build: auto_ru_api
-    links:
-      - selenium-router
-    shm_size: 2gb
-    depends_on:
-      - selenium-router
-    restart: always
-    environment:
-      - STARTING_PAGE=auto.ru
-      - ROUTER=selenium-router
-      - ROUTER_PORT=4444
-      - MONGO_LOG=arman
-      - MONGO_PAS=arman
-    ports:
-      - "5000:5000"
+#   auto_ru_worker:
+#     build: auto_ru_api
+#     links:
+#       - selenium-router
+#     shm_size: 2gb
+#     depends_on:
+#       - selenium-router
+#     restart: always
+#     environment:
+#       - STARTING_PAGE=auto.ru
+#       - ROUTER=selenium-router
+#       - ROUTER_PORT=4444
+#       - MONGO_LOG=arman
+#       - MONGO_PAS=arman
+#     ports:
+#       - "5000:5000"
 
-  front:
-    build: with_front
-    restart: always
-    links:
-      - auto_ru_worker
-    depends_on:
-      - auto_ru_worker
-    restart: on-failure
+#   front:
+#     build: with_front
+#     restart: always
+#     links:
+#       - auto_ru_worker
+#     depends_on:
+#       - auto_ru_worker
+#     restart: on-failure
